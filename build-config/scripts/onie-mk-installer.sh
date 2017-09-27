@@ -143,6 +143,11 @@ echo -n "."
 if [ "$arch_dir" = "u-boot-arch" ] ; then
     sed -e "s/%%UPDATER_UBOOT_NAME%%/$UPDATER_UBOOT_NAME/" \
 	-i $tmp_installdir/install-arch
+elif [ "$arch_dir" = "grub-arch" ] ; then
+    sed -e "s/%%BOOT_SIZE_MB%%/$BOOT_SIZE_MB/" \
+	-i $tmp_installdir/install-arch
+    sed -e "s/%%UEFI_ESP_SIZE_MB%%/$UEFI_ESP_SIZE_MB/" \
+	-i $tmp_installdir/install-arch
 fi
 echo -n "."
 

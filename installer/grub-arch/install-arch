@@ -158,14 +158,14 @@ init_onie_install()
         # UEFI EFI System Partition
         uefi_esp_part=1
         uefi_esp_start=2048
-        # 256MB
-        uefi_esp_size=$(( 256 * $sectors_per_mb ))
+        # %%UEFI_ESP_SIZE_MB%%MB
+        uefi_esp_size=$(( %%UEFI_ESP_SIZE_MB%% * $sectors_per_mb ))
 
         # ONIE-BOOT Paritition
         onie_boot_part=$(( $uefi_esp_part + 1 ))
         onie_boot_start=$(( $uefi_esp_start + $uefi_esp_size ))
-        # 128MB
-        onie_boot_size=$(( 128 * $sectors_per_mb ))
+        # %%BOOT_SIZE_MB%%MB
+        onie_boot_size=$(( %%BOOT_SIZE_MB%% * $sectors_per_mb ))
 
         # Helper functions
         init_disk="init_uefi_disk"
@@ -180,8 +180,8 @@ init_onie_install()
         # ONIE-BOOT Paritition
         onie_boot_part=$(( $grub_boot_part + 1 ))
         onie_boot_start=$(( $grub_boot_start + $grub_boot_size ))
-        # 128MB
-        onie_boot_size=$(( 128 * $sectors_per_mb ))
+        # %%BOOT_SIZE_MB%%MB
+        onie_boot_size=$(( %%BOOT_SIZE_MB%% * $sectors_per_mb ))
 
         # Helper functions
         init_disk="init_gpt_disk"
@@ -190,8 +190,8 @@ init_onie_install()
         # ONIE-BOOT Paritition
         onie_boot_part=1
         onie_boot_start=2048
-        # 128MB
-        onie_boot_size=$(( 128 * $sectors_per_mb ))
+        # %%BOOT_SIZE_MB%%MB
+        onie_boot_size=$(( %%BOOT_SIZE_MB%% * $sectors_per_mb ))
         # Helper functions
         init_disk="init_msdos_disk"
         verify_partitions="verify_msdos_partitions"
