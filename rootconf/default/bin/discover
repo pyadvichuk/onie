@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#  Copyright (C) 2013-2014 Curt Brune <curt@cumulusnetworks.com>
+#  Copyright (C) 2013,2014,2018 Curt Brune <curt@cumulusnetworks.com>
 #
 #  SPDX-License-Identifier:     GPL-2.0
 
@@ -56,7 +56,7 @@ neigh_discovery()
     # gather IPv4 neighbors
     ip -4 neigh show | awk '{print $1}' | tr '\n' ',' >> $onie_neigh_file
     # gather IPv6 neighbors
-    ip -6 neigh show | awk '{print $1 "-" $3}' | tr '\n' ',' >> $onie_neigh_file
+    ip -6 neigh show | awk '{print "[" $1 "-" $3 "]"}' | tr '\n' ',' >> $onie_neigh_file
     echo -n "##" >> $onie_neigh_file
     log_debug_msg "onie_neighs: $(cat $onie_neigh_file)"
 }
@@ -94,6 +94,37 @@ sd_localfs()
                 fi
             done
             umount $p > /dev/null 2>&1
+        }
+    done
+    rm -rf $mp
+    if [ -n "$local_parts" ] ; then
+        onie_disco=$(add_parm "$onie_disco" onie_local_parts $local_parts)
+        return 0
+    fi
+
+    return 1
+}
+
+# Check locally attached ubi filesystems, skipping the ONIE partitions
+sd_localubifs()
+{
+    mp=$(mktemp -d)
+    local_parts=
+    for p in /sys/class/ubi/ubi?/ubi?_? ; do
+        [ -r $p/name ] || continue
+        ubiname=$(cat $p/name)
+        for skip in $(skip_parts_arch) ; do
+            [ "$skip" = "$ubiname" ] && continue 2
+        done
+        mount -t ubifs ubi:$ubiname $mp > /dev/null 2>&1 && {
+            for f in $(get_default_filenames) ; do
+                log_info_msg "Attempting file: ubi:$ubiname/$f ..."
+                if [ -r $mp/$f ] ; then
+                    local_parts="ubi:${ubiname},$local_parts"
+                    break
+                fi
+            done
+            umount $mp > /dev/null 2>&1
         }
     done
     rm -rf $mp
@@ -165,6 +196,7 @@ service_discovery()
     onie_disco=
     sd_static  && return
     sd_localfs
+    sd_localubifs
     sd_dhcp6
     sd_dhcp4
     sd_mdns
